@@ -20,10 +20,10 @@ public class Main {
     };
 
     public static void main( String[] args ) {
-        IO.println( "Введите число" );
+        System.out.println( "Введите число" );
         while ( true ) {
             Scanner sc = new Scanner( System.in );
-            IO.print("> ");
+            System.out.print("> ");
             String input = sc.nextLine();
 
             if ( input.equals( "exit" ) || input.equals( "выход" ) ) System.exit( 0 );
@@ -32,11 +32,14 @@ public class Main {
             try {
                 inputVal = Integer.parseInt( input );
             } catch ( NumberFormatException ignore ) {
-                IO.println( "Введите ЧИСЛО" );
+                System.out.println( "Введите ЧИСЛО" );
                 continue;
             }
 
-            if ( inputVal <= 0 ) IO.println( "Введите число > 0" );
+            if ( inputVal <= 0 ) {
+                System.out.println( "Введите число > 0" );
+                continue;
+            }
 
             StringBuilder str = new StringBuilder();
             for ( int i = 4; i >= 0; i-- ) {
@@ -45,7 +48,7 @@ public class Main {
                 str.append( spell( triplet, i ) ).append( " " );
             }
 
-            IO.println( firstToUpper( str.toString() ).trim() + " " + rubles( inputVal ) );
+            System.out.println( firstToUpper( str.toString() ).trim() + " " + rubles( inputVal ) );
         }
     }
 
