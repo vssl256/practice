@@ -20,9 +20,13 @@ public class Main {
     };
 
     public static void main( String[] args ) {
-        while (true) {
+        IO.println( "Введите число" );
+        while ( true ) {
             Scanner sc = new Scanner( System.in );
+            IO.print("> ");
             String input = sc.nextLine();
+
+            if ( input.equals( "exit" ) || input.equals( "выход" ) ) System.exit( 0 );
 
             int inputVal;
             try {
