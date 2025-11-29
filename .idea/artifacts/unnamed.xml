@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jlink" name="unnamed">
+    <output-path>$PROJECT_DIR$/out/artifacts/unnamed</output-path>
+    <root id="root">
+      <element id="module-output" name="kms" />
+      <element id="artifact" artifact-name="practice:jar" />
+    </root>
+  </artifact>
+</component>
