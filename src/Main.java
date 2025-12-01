@@ -1,9 +1,9 @@
 static final String[] ONES_M = {
-        "ноль", "один", "два", "три", "четыре", "пять", "шесть",
+        "", "один", "два", "три", "четыре", "пять", "шесть",
         "семь", "восемь", "девять"
 };
 static final String[] ONES_F = {
-        "ноль", "одна", "две", "три", "четыре", "пять", "шесть",
+        "", "одна", "две", "три", "четыре", "пять", "шесть",
         "семь", "восемь", "девять"
 };
 static final String[] TEENS = {
@@ -116,7 +116,7 @@ String spell( final List<Integer> triplets, final boolean isNegative ) {
         );
         sb.append( part.trim() ).append( " " );
     }
-    sb.append( sb.isEmpty() ? ONES_M[ 0 ] + " " : "" );
+    sb.append( sb.isEmpty() ? "ноль " : "" );
     int lastTwo = triplets.getFirst() % 100;
     String roubles = ROUBLE_FORMS[ forms[ lastTwo ] ];
     sb.append( roubles );
@@ -135,7 +135,7 @@ String spellTriplet( final int[] triplet, final boolean isFemale ) {
             HUNDS[ hundsDigit ],
             tensOnes[ tensDigit ][ onesDigit ]
     );
-    return out;
+    return out.trim();
 }
 
 String capitalize( String str ) {
