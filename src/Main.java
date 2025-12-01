@@ -1,35 +1,36 @@
-final String[] onesM = {
-        "", "один", "два", "три", "четыре", "пять", "шесть",
+static final String[] ONES_M = {
+        "ноль", "один", "два", "три", "четыре", "пять", "шесть",
         "семь", "восемь", "девять"
 };
-final String[] onesF = {
-        "", "одна", "две", "три", "четыре", "пять", "шесть",
+static final String[] ONES_F = {
+        "ноль", "одна", "две", "три", "четыре", "пять", "шесть",
         "семь", "восемь", "девять"
 };
-final String[] teens = {
+static final String[] TEENS = {
         "десять", "одиннадцать", "двенадцать", "тринадцать", "четырнадцать",
         "пятнадцать", "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать"
 };
-final String[] tens = {
+static final String[] TENS = {
         "", "десять", "двадцать", "тридцать", "сорок", "пятьдесят",
         "шестьдесят", "семьдесят", "восемьдесят", "девяносто"
 };
-final String[] hunds = {
+static final String[] HUNDS = {
         "", "сто", "двести", "триста", "четыреста", "пятьсот",
         "шестьсот", "семьсот", "восемьсот", "девятьсот"
 };
-final String[][] periods = {
+static final String[][] PERIODS = {
         { "", "", "" },
         { "тысяча", "тысячи", "тысяч" },
         { "миллион", "миллиона", "миллионов" },
         { "миллиард", "миллиарда", "миллиардов" }
 };
-int[] forms;
+static final String[] ROUBLE_FORMS = { "рубль.", "рубля.", "рублей." };
+static int[] forms;
 void initForms() {
     forms = new int[ 100 ];
     for ( int i = 0; i < forms.length; i++ ) {
-        int lastTwo = i % 100;
-        int lastDigit = i % 10;
+        final int lastTwo = i % 100;
+        final int lastDigit = i % 10;
 
         forms[ i ] = ( lastTwo >= 11 && lastTwo <= 19 ) ? 2 : switch ( lastDigit ) {
             case 1 -> 0;
@@ -38,20 +39,20 @@ void initForms() {
         };
     }
 }
-String[][] tensOnesM;
-String[][] tensOnesF;
+static String[][] tensOnesM;
+static String[][] tensOnesF;
 String[][] initTensArr( char sex ) {
     String[][] tensOnes = new String[ 10 ][ 10 ];
     String[] ones = switch ( sex ) {
-        case 'F' -> onesF;
-        default -> onesM;
+        case 'F' -> ONES_F;
+        default -> ONES_M;
     };
     for ( int t = 0; t < 10; t++ ) {
         for ( int o = 0; o < 10; o++ ){
             tensOnes[ t ][ o ] = switch ( t ) {
                 case 0 -> ones[ o ];
-                case 1 -> teens[ o ];
-                default -> tens[ t ] + " " + ones[ o ];
+                case 1 -> TEENS[ o ];
+                default -> TENS[ t ] + " " + ones[ o ];
             };
         }
     }
@@ -61,26 +62,9 @@ void initTens() {
     tensOnesM = initTensArr( 'M' );
     tensOnesF = initTensArr( 'F' );
 }
-String[][] roubleForms;
-void initRoubleForms() {
-    roubleForms = new String[ 10 ][ 10 ];
-    for ( int t = 0; t < 10; t++ ) {
-        for ( int o = 0; o < 10; o++ ) {
-            roubleForms[ t ][ o ] = switch ( t ) {
-                case 1 -> "рублей.";
-                default -> switch ( o ) {
-                    case 1 -> "рубль.";
-                    case 2, 3, 4 -> "рубля.";
-                    default -> "рублей.";
-                };
-            };
-        }
-    }
-}
 void initTables() {
     initForms();
     initTens();
-    initRoubleForms();
 }
 
 void main() {
@@ -88,25 +72,28 @@ void main() {
     Scanner sc = new Scanner( System.in );
     while ( true ) {
         String inputString = sc.nextLine();
-        int inputValue = Integer.parseInt( inputString );
-        spell( dissect( inputValue ) );
+        if ( inputString.equals( "exit" ) ) break;
+        try {
+            int inputValue = Integer.parseInt( inputString );
+            boolean isNegative = inputValue < 0;
+            System.out.println( spell ( dissect( Math.abs( inputValue ) ), isNegative ) );
+        } catch ( NumberFormatException ignore ) {
+            System.out.println( "Введите корректное целое число" );
+        }
     }
 }
 
-int[] dissect( int inputValue ) {
-    int tripletsCount = 1;
-    for ( int i = inputValue; i != 0; i /= 1_000 ) {
-        tripletsCount++;
-    }
-    int[] triplets = new int[ tripletsCount ];
-    for ( int i = 0; i < tripletsCount; i++ ) {
-        int triplet = inputValue / ( int ) Math.pow( 1_000, i ) % 1_000;
-        triplets[ i ] = triplet;
-    }
+List<Integer> dissect( int inputValue ) {
+    List<Integer> triplets = new ArrayList<>();
+    do {
+        int triplet = inputValue % 1_000;
+        triplets.add( triplet );
+        inputValue /= 1_000;
+    } while ( inputValue > 0 );
     return triplets;
 }
 
-int[] dissectTriplet( int triplet ) {
+int[] dissectTriplet( final int triplet ) {
     return new int[] {
             triplet / 100,
             triplet / 10 % 10,
@@ -114,37 +101,43 @@ int[] dissectTriplet( int triplet ) {
     };
 }
 
-void spell( int[] triplets ) {
+String spell( final List<Integer> triplets, final boolean isNegative ) {
     StringBuilder sb = new StringBuilder();
-    for ( int i = triplets.length - 1; i >= 0; i-- ) {
-        if ( triplets[ i ] == 0 ) continue;
-        int[] triplet = dissectTriplet( triplets[ i ] );
+    if ( isNegative ) sb.append( "минус " );
+    for ( int i = triplets.size() - 1; i >= 0; i-- ) {
+        if ( triplets.get( i ) == 0 ) continue;
+        int[] triplet = dissectTriplet( triplets.get( i ) );
         int lastTwo = triplet[ 1 ] * 10 + triplet[ 2 ];
         boolean isFemale = i == 1;
-        sb.append( spellTriplet( triplet, isFemale ) ).append( " " );
-        sb.append( periods[ i ][ forms[ lastTwo ] ] ).append( " " );
+        String part = String.join( " ",
+            spellTriplet( triplet, isFemale ),
+            PERIODS[ i ][ forms[ lastTwo ] ]
+        );
+        sb.append( part.trim() ).append( " " );
     }
-    sb.append( sb.isEmpty() ? "ноль" : "" );
-    int last = triplets[ 0 ] % 10;
-    int preLast = triplets[ 0 ] / 10 % 10;
-    String roubles = roubleForms[ preLast ][ last ];
-    IO.println( firstToUpper( sb.toString().trim() + " " + roubles ) );
+    sb.append( sb.isEmpty() ? ONES_M[ 0 ] + " " : "" );
+    int lastTwo = triplets.getFirst() % 100;
+    String roubles = ROUBLE_FORMS[ forms[ lastTwo ] ];
+    sb.append( roubles );
+    return capitalize( sb.toString().trim() );
 }
 
-String spellTriplet( int[] triplet, boolean isFemale ) {
-    StringBuilder sb = new StringBuilder();
+String spellTriplet( final int[] triplet, final boolean isFemale ) {
+    String out;
 
     int hundsDigit = triplet[0];
     int tensDigit = triplet[1];
     int onesDigit = triplet[2];
 
     String[][] tensOnes = isFemale ? tensOnesF : tensOnesM;
-
-    sb.append( hunds[ hundsDigit ] ).append( " " );
-    sb.append( tensOnes[ tensDigit ][ onesDigit ] );
-    return sb.toString().trim();
+    out = String.join( " ",
+            HUNDS[ hundsDigit ],
+            tensOnes[ tensDigit ][ onesDigit ]
+    );
+    return out;
 }
 
-static String firstToUpper( String str ) {
-    return str.substring( 0, 1 ).toUpperCase() + str.substring( 1 );
+String capitalize( String str ) {
+    if ( str.isEmpty() ) return str;
+    return Character.toUpperCase( str.charAt( 0 ) ) + str.substring( 1 );
 }
