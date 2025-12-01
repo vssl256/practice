@@ -24,6 +24,7 @@ static final String[][] PERIODS = {
         { "миллион", "миллиона", "миллионов" },
         { "миллиард", "миллиарда", "миллиардов" }
 };
+static final int TRIPLET = 1_000;
 static final String[] ROUBLE_FORMS = { "рубль.", "рубля.", "рублей." };
 static int[] forms;
 void initForms() {
@@ -86,9 +87,9 @@ void main() {
 List<Integer> dissect( int inputValue ) {
     List<Integer> triplets = new ArrayList<>();
     do {
-        int triplet = inputValue % 1_000;
+        int triplet = inputValue % TRIPLET;
         triplets.add( triplet );
-        inputValue /= 1_000;
+        inputValue /= TRIPLET;
     } while ( inputValue > 0 );
     return triplets;
 }
