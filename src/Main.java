@@ -1,8 +1,8 @@
-static final String[] ONES_M = {
+static final String[] ONES_MASCULINE = {
         "", "один", "два", "три", "четыре", "пять", "шесть",
         "семь", "восемь", "девять"
 };
-static final String[] ONES_F = {
+static final String[] ONES_FEMININE = {
         "", "одна", "две", "три", "четыре", "пять", "шесть",
         "семь", "восемь", "девять"
 };
@@ -14,7 +14,7 @@ static final String[] TENS = {
         "", "десять", "двадцать", "тридцать", "сорок", "пятьдесят",
         "шестьдесят", "семьдесят", "восемьдесят", "девяносто"
 };
-static final String[] HUNDS = {
+static final String[] HUNDREDS = {
         "", "сто", "двести", "триста", "четыреста", "пятьсот",
         "шестьсот", "семьсот", "восемьсот", "девятьсот"
 };
@@ -40,13 +40,13 @@ void initForms() {
         };
     }
 }
-static String[][] tensOnesM;
-static String[][] tensOnesF;
-String[][] initTensArr( char sex ) {
+static String[][] tensOnesMasculine;
+static String[][] tensOnesFeminine;
+String[][] initTensArr( String sex ) {
     String[][] tensOnes = new String[ 10 ][ 10 ];
     String[] ones = switch ( sex ) {
-        case 'F' -> ONES_F;
-        default -> ONES_M;
+        case "FEMININE" -> ONES_FEMININE;
+        default -> ONES_MASCULINE;
     };
     for ( int t = 0; t < 10; t++ ) {
         for ( int o = 0; o < 10; o++ ){
@@ -60,8 +60,8 @@ String[][] initTensArr( char sex ) {
     return tensOnes;
 }
 void initTens() {
-    tensOnesM = initTensArr( 'M' );
-    tensOnesF = initTensArr( 'F' );
+    tensOnesMasculine = initTensArr( "MASCULINE" );
+    tensOnesFeminine = initTensArr( "FEMININE" );
 }
 void initTables() {
     initForms();
@@ -130,9 +130,9 @@ String spellTriplet( final int[] triplet, final boolean isFemale ) {
     int tensDigit = triplet[1];
     int onesDigit = triplet[2];
 
-    String[][] tensOnes = isFemale ? tensOnesF : tensOnesM;
+    String[][] tensOnes = isFemale ? tensOnesFeminine : tensOnesMasculine;
     out = String.join( " ",
-            HUNDS[ hundsDigit ],
+            HUNDREDS[ hundsDigit ],
             tensOnes[ tensDigit ][ onesDigit ]
     );
     return out.trim();
