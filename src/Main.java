@@ -11,7 +11,7 @@ static final String[] TEENS = {
         "пятнадцать", "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать"
 };
 static final String[] TENS = {
-        "", "десять", "двадцать", "тридцать", "сорок", "пятьдесят",
+        "", "", "двадцать", "тридцать", "сорок", "пятьдесят",
         "шестьдесят", "семьдесят", "восемьдесят", "девяносто"
 };
 static final String[] HUNDREDS = {
@@ -19,21 +19,22 @@ static final String[] HUNDREDS = {
         "шестьсот", "семьсот", "восемьсот", "девятьсот"
 };
 static final String[][] PERIODS = {
-        { "", "", "" },
+        { "рубль.", "рубля.", "рублей." },
         { "тысяча", "тысячи", "тысяч" },
         { "миллион", "миллиона", "миллионов" },
         { "миллиард", "миллиарда", "миллиардов" }
 };
-static final int TRIPLET = 1_000;
-static final String[] ROUBLE_FORMS = { "рубль.", "рубля.", "рублей." };
-static int[] forms;
+static final boolean[] PERIOD_IS_FEMALE = { false, true, false, false };
+static final boolean[] PERIOD_CAN_BE_ZERO = { true, false, false, false };
+static final int BASE = 1_000;
+static int[] pluralForms;
 void initForms() {
-    forms = new int[ 100 ];
-    for ( int i = 0; i < forms.length; i++ ) {
+    pluralForms = new int[ 100 ];
+    for ( int i = 0; i < pluralForms.length; i++ ) {
         final int lastTwo = i % 100;
         final int lastDigit = i % 10;
 
-        forms[ i ] = ( lastTwo >= 11 && lastTwo <= 19 ) ? 2 : switch ( lastDigit ) {
+        pluralForms[ i ] = ( lastTwo >= 11 && lastTwo <= 19 ) ? 2 : switch ( lastDigit ) {
             case 1 -> 0;
             case 2, 3, 4 -> 1;
             default -> 2;
@@ -42,11 +43,15 @@ void initForms() {
 }
 static String[][] tensOnesMasculine;
 static String[][] tensOnesFeminine;
-String[][] initTensArr( String sex ) {
+enum Sex {
+    MASCULINE,
+    FEMININE
+}
+String[][] initTensArr( Sex sex ) {
     String[][] tensOnes = new String[ 10 ][ 10 ];
     String[] ones = switch ( sex ) {
-        case "FEMININE" -> ONES_FEMININE;
-        default -> ONES_MASCULINE;
+        case FEMININE -> ONES_FEMININE;
+        case MASCULINE -> ONES_MASCULINE;
     };
     for ( int t = 0; t < 10; t++ ) {
         for ( int o = 0; o < 10; o++ ){
@@ -60,8 +65,8 @@ String[][] initTensArr( String sex ) {
     return tensOnes;
 }
 void initTens() {
-    tensOnesMasculine = initTensArr( "MASCULINE" );
-    tensOnesFeminine = initTensArr( "FEMININE" );
+    tensOnesMasculine = initTensArr( Sex.MASCULINE );
+    tensOnesFeminine = initTensArr( Sex.FEMININE );
 }
 void initTables() {
     initForms();
@@ -87,9 +92,9 @@ void main() {
 List<Integer> dissect( int inputValue ) {
     List<Integer> triplets = new ArrayList<>();
     do {
-        int triplet = inputValue % TRIPLET;
+        int triplet = inputValue % BASE;
         triplets.add( triplet );
-        inputValue /= TRIPLET;
+        inputValue /= BASE;
     } while ( inputValue > 0 );
     return triplets;
 }
@@ -106,33 +111,30 @@ String spell( final List<Integer> triplets, final boolean isNegative ) {
     StringBuilder sb = new StringBuilder();
     if ( isNegative ) sb.append( "минус " );
     for ( int i = triplets.size() - 1; i >= 0; i-- ) {
-        if ( triplets.get( i ) == 0 ) continue;
+        if ( triplets.get( i ) == 0 && !PERIOD_CAN_BE_ZERO[ i ] ) continue;
         int[] triplet = dissectTriplet( triplets.get( i ) );
         int lastTwo = triplet[ 1 ] * 10 + triplet[ 2 ];
-        boolean isFemale = i == 1;
+        boolean isFemale = PERIOD_IS_FEMALE[ i ];
         String part = String.join( " ",
             spellTriplet( triplet, isFemale ),
-            PERIODS[ i ][ forms[ lastTwo ] ]
+                PERIODS[ i ][ pluralForms[ lastTwo ] ]
         );
         sb.append( part.trim() ).append( " " );
     }
     sb.append( sb.isEmpty() ? "ноль " : "" );
-    int lastTwo = triplets.getFirst() % 100;
-    String roubles = ROUBLE_FORMS[ forms[ lastTwo ] ];
-    sb.append( roubles );
     return capitalize( sb.toString().trim() );
 }
 
 String spellTriplet( final int[] triplet, final boolean isFemale ) {
     String out;
 
-    int hundsDigit = triplet[0];
+    int hundredsDigit = triplet[0];
     int tensDigit = triplet[1];
     int onesDigit = triplet[2];
 
     String[][] tensOnes = isFemale ? tensOnesFeminine : tensOnesMasculine;
     out = String.join( " ",
-            HUNDREDS[ hundsDigit ],
+            HUNDREDS[ hundredsDigit ],
             tensOnes[ tensDigit ][ onesDigit ]
     );
     return out.trim();
