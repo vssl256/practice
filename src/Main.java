@@ -1,3 +1,6 @@
+static final int BASE = 1_000;
+static final int MAX_LAST_TWO = 100;
+static final int SEX_COUNT = 2;
 static final String[] ONES_MASCULINE = {
         "", "один", "два", "три", "четыре", "пять", "шесть",
         "семь", "восемь", "девять"
@@ -24,10 +27,12 @@ static final String[][] RAW_PERIODS = {
         { "миллион", "миллиона", "миллионов" },
         { "миллиард", "миллиарда", "миллиардов" }
 };
-static final String[][] PERIODS = new String[4][100];
+static final int PERIOD_COUNT = RAW_PERIODS.length;
+
+static final String[][] PERIODS = new String[ PERIOD_COUNT ][ MAX_LAST_TWO ];
 void initPeriods() {
-    for ( int period = 0; period < 4; period++ ) {
-        for ( int lastTwo = 0; lastTwo < 100; lastTwo++ ) {
+    for ( int period = 0; period < PERIOD_COUNT; period++ ) {
+        for ( int lastTwo = 0; lastTwo < MAX_LAST_TWO; lastTwo++ ) {
             int form = ( lastTwo >= 11 && lastTwo <= 19 ) ? 2 : switch ( lastTwo % 10 ) {
                 case 1 -> 0;
                 case 2, 3, 4 -> 1;
@@ -37,13 +42,15 @@ void initPeriods() {
         }
     }
 }
-static final String[][] TRIPLETS = new String[ Sex.values().length ][ 1_000 ];
+
+static final int MAX_TRIPLET = BASE;
+static final String[][] TRIPLETS = new String[ Sex.values().length ][ MAX_TRIPLET ];
 void initTriplets() {
-    for ( int sex = 0; sex < 2; sex++ ) {
+    for ( int sex = 0; sex < SEX_COUNT; sex++ ) {
         boolean isFeminine = sex == Sex.FEMININE.ordinal();
         String[][] tensOnes = isFeminine ? tensOnesFeminine : tensOnesMasculine;
 
-        for ( int value = 0; value < 1000; value++ ) {
+        for ( int value = 0; value < BASE; value++ ) {
             int hundreds = value / 100;
             int tens = value / 10 % 10;
             int ones = value % 10;
@@ -55,32 +62,35 @@ void initTriplets() {
         }
     }
 }
+
 static final boolean[] PERIOD_IS_FEMALE = { false, true, false, false };
 static final boolean[] PERIOD_CAN_BE_ZERO = { true, false, false, false };
-static final int BASE = 1_000;
+
 static String[][] tensOnesMasculine;
 static String[][] tensOnesFeminine;
 enum Sex {
     MASCULINE,
     FEMININE
 }
+static final int DIGIT_COUNT = 10;
 String[][] initTensArr( Sex sex ) {
-    String[][] tensOnes = new String[ 10 ][ 10 ];
+    String[][] tensOnes = new String[ DIGIT_COUNT ][ DIGIT_COUNT ];
     String[] ones = switch ( sex ) {
         case FEMININE -> ONES_FEMININE;
         case MASCULINE -> ONES_MASCULINE;
     };
-    for ( int t = 0; t < 10; t++ ) {
-        for ( int o = 0; o < 10; o++ ){
-            tensOnes[ t ][ o ] = switch ( t ) {
-                case 0 -> ones[ o ];
-                case 1 -> TEENS[ o ];
-                default -> TENS[ t ] + " " + ones[ o ];
+    for ( int tensDigit = 0; tensDigit < DIGIT_COUNT; tensDigit++ ) {
+        for ( int onesDigit = 0; onesDigit < DIGIT_COUNT; onesDigit++ ){
+            tensOnes[ tensDigit ][ onesDigit ] = switch ( tensDigit ) {
+                case 0 -> ones[ onesDigit ];
+                case 1 -> TEENS[ onesDigit ];
+                default -> TENS[ tensDigit ] + " " + ones[ onesDigit ];
             };
         }
     }
     return tensOnes;
 }
+
 void initTens() {
     tensOnesMasculine = initTensArr( Sex.MASCULINE );
     tensOnesFeminine = initTensArr( Sex.FEMININE );
