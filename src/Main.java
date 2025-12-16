@@ -43,7 +43,7 @@ void initPeriods() {
     }
 }
 
-static final int MAX_TRIPLET = BASE;
+static final int MAX_TRIPLET = 1_000;
 static final String[][] TRIPLETS = new String[ Sex.values().length ][ MAX_TRIPLET ];
 void initTriplets() {
     for ( int sex = 0; sex < SEX_COUNT; sex++ ) {
