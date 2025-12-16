@@ -43,8 +43,7 @@ void initPeriods() {
     }
 }
 
-static final int MAX_TRIPLET = 1_000;
-static final String[][] TRIPLETS = new String[ Sex.values().length ][ MAX_TRIPLET ];
+static final String[][] TRIPLETS = new String[ Sex.values().length ][ BASE ];
 void initTriplets() {
     for ( int sex = 0; sex < SEX_COUNT; sex++ ) {
         boolean isFeminine = sex == Sex.FEMININE.ordinal();
