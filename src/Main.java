@@ -18,29 +18,46 @@ static final String[] HUNDREDS = {
         "", "сто", "двести", "триста", "четыреста", "пятьсот",
         "шестьсот", "семьсот", "восемьсот", "девятьсот"
 };
-static final String[][] PERIODS = {
+static final String[][] RAW_PERIODS = {
         { "рубль.", "рубля.", "рублей." },
         { "тысяча", "тысячи", "тысяч" },
         { "миллион", "миллиона", "миллионов" },
         { "миллиард", "миллиарда", "миллиардов" }
 };
+static final String[][] PERIODS = new String[4][100];
+void initPeriods() {
+    for ( int period = 0; period < 4; period++ ) {
+        for ( int lastTwo = 0; lastTwo < 100; lastTwo++ ) {
+            int form = ( lastTwo >= 11 && lastTwo <= 19 ) ? 2 : switch ( lastTwo % 10 ) {
+                case 1 -> 0;
+                case 2, 3, 4 -> 1;
+                default -> 2;
+            };
+            PERIODS[ period ][ lastTwo ] = RAW_PERIODS[ period ][ form ];
+        }
+    }
+}
+static final String[][] TRIPLETS = new String[ Sex.values().length ][ 1_000 ];
+void initTriplets() {
+    for ( int sex = 0; sex < 2; sex++ ) {
+        boolean isFeminine = sex == Sex.FEMININE.ordinal();
+        String[][] tensOnes = isFeminine ? tensOnesFeminine : tensOnesMasculine;
+
+        for ( int value = 0; value < 1000; value++ ) {
+            int hundreds = value / 100;
+            int tens = value / 10 % 10;
+            int ones = value % 10;
+
+            TRIPLETS[ sex ][ value ] = String.join( " ",
+                    HUNDREDS[ hundreds ],
+                    tensOnes[ tens ][ ones ]
+            ).trim();
+        }
+    }
+}
 static final boolean[] PERIOD_IS_FEMALE = { false, true, false, false };
 static final boolean[] PERIOD_CAN_BE_ZERO = { true, false, false, false };
 static final int BASE = 1_000;
-static int[] pluralForms;
-void initForms() {
-    pluralForms = new int[ 100 ];
-    for ( int i = 0; i < pluralForms.length; i++ ) {
-        final int lastTwo = i % 100;
-        final int lastDigit = i % 10;
-
-        pluralForms[ i ] = ( lastTwo >= 11 && lastTwo <= 19 ) ? 2 : switch ( lastDigit ) {
-            case 1 -> 0;
-            case 2, 3, 4 -> 1;
-            default -> 2;
-        };
-    }
-}
 static String[][] tensOnesMasculine;
 static String[][] tensOnesFeminine;
 enum Sex {
@@ -69,8 +86,9 @@ void initTens() {
     tensOnesFeminine = initTensArr( Sex.FEMININE );
 }
 void initTables() {
-    initForms();
+    initPeriods();
     initTens();
+    initTriplets();
 }
 
 void main() {
@@ -99,45 +117,21 @@ List<Integer> dissect( int inputValue ) {
     return triplets;
 }
 
-int[] dissectTriplet( final int triplet ) {
-    return new int[] {
-            triplet / 100,
-            triplet / 10 % 10,
-            triplet % 10
-    };
-}
-
 String spell( final List<Integer> triplets, final boolean isNegative ) {
     StringBuilder sb = new StringBuilder();
     if ( isNegative ) sb.append( "минус " );
     for ( int i = triplets.size() - 1; i >= 0; i-- ) {
         if ( triplets.get( i ) == 0 && !PERIOD_CAN_BE_ZERO[ i ] ) continue;
-        int[] triplet = dissectTriplet( triplets.get( i ) );
-        int lastTwo = triplet[ 1 ] * 10 + triplet[ 2 ];
-        boolean isFemale = PERIOD_IS_FEMALE[ i ];
+        int value = triplets.get( i );
+        Sex sex = PERIOD_IS_FEMALE[ i ] ? Sex.FEMININE : Sex.MASCULINE;
         String part = String.join( " ",
-            spellTriplet( triplet, isFemale ),
-                PERIODS[ i ][ pluralForms[ lastTwo ] ]
+                TRIPLETS[ sex.ordinal() ][ value ],
+                PERIODS[ i ][ value % 100 ]
         );
         sb.append( part.trim() ).append( " " );
     }
     sb.append( sb.isEmpty() ? "ноль " : "" );
     return capitalize( sb.toString().trim() );
-}
-
-String spellTriplet( final int[] triplet, final boolean isFemale ) {
-    String out;
-
-    int hundredsDigit = triplet[0];
-    int tensDigit = triplet[1];
-    int onesDigit = triplet[2];
-
-    String[][] tensOnes = isFemale ? tensOnesFeminine : tensOnesMasculine;
-    out = String.join( " ",
-            HUNDREDS[ hundredsDigit ],
-            tensOnes[ tensDigit ][ onesDigit ]
-    );
-    return out.trim();
 }
 
 String capitalize( String str ) {
