@@ -1,149 +1,101 @@
-static final int BASE = 1_000;
-static final int MAX_LAST_TWO = 100;
-static final int SEX_COUNT = 2;
-static final String[] ONES_MASCULINE = {
-        "", "один", "два", "три", "четыре", "пять", "шесть",
-        "семь", "восемь", "девять"
-};
-static final String[] ONES_FEMININE = {
-        "", "одна", "две", "три", "четыре", "пять", "шесть",
-        "семь", "восемь", "девять"
-};
-static final String[] TEENS = {
-        "десять", "одиннадцать", "двенадцать", "тринадцать", "четырнадцать",
-        "пятнадцать", "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать"
-};
-static final String[] TENS = {
-        "", "", "двадцать", "тридцать", "сорок", "пятьдесят",
-        "шестьдесят", "семьдесят", "восемьдесят", "девяносто"
-};
-static final String[] HUNDREDS = {
-        "", "сто", "двести", "триста", "четыреста", "пятьсот",
-        "шестьсот", "семьсот", "восемьсот", "девятьсот"
-};
-static final String[][] RAW_PERIODS = {
-        { "рубль.", "рубля.", "рублей." },
-        { "тысяча", "тысячи", "тысяч" },
-        { "миллион", "миллиона", "миллионов" },
-        { "миллиард", "миллиарда", "миллиардов" }
-};
-static final int PERIOD_COUNT = RAW_PERIODS.length;
+import java.util.Scanner;
 
-static final String[][] PERIODS = new String[ PERIOD_COUNT ][ MAX_LAST_TWO ];
-void initPeriods() {
-    for ( int period = 0; period < PERIOD_COUNT; period++ ) {
-        for ( int lastTwo = 0; lastTwo < MAX_LAST_TWO; lastTwo++ ) {
-            int form = ( lastTwo >= 11 && lastTwo <= 19 ) ? 2 : switch ( lastTwo % 10 ) {
-                case 1 -> 0;
-                case 2, 3, 4 -> 1;
-                default -> 2;
-            };
-            PERIODS[ period ][ lastTwo ] = RAW_PERIODS[ period ][ form ];
-        }
-    }
-}
-
-static final String[][] TRIPLETS = new String[ Sex.values().length ][ BASE ];
-void initTriplets() {
-    for ( int sex = 0; sex < SEX_COUNT; sex++ ) {
-        boolean isFeminine = sex == Sex.FEMININE.ordinal();
-        String[][] tensOnes = isFeminine ? tensOnesFeminine : tensOnesMasculine;
-
-        for ( int value = 0; value < BASE; value++ ) {
-            int hundreds = value / 100;
-            int tens = value / 10 % 10;
-            int ones = value % 10;
-
-            TRIPLETS[ sex ][ value ] = String.join( " ",
-                    HUNDREDS[ hundreds ],
-                    tensOnes[ tens ][ ones ]
-            ).trim();
-        }
-    }
-}
-
-static final boolean[] PERIOD_IS_FEMALE = { false, true, false, false };
-static final boolean[] PERIOD_CAN_BE_ZERO = { true, false, false, false };
-
-static String[][] tensOnesMasculine;
-static String[][] tensOnesFeminine;
-enum Sex {
-    MASCULINE,
-    FEMININE
-}
-static final int DIGIT_COUNT = 10;
-String[][] initTensArr( Sex sex ) {
-    String[][] tensOnes = new String[ DIGIT_COUNT ][ DIGIT_COUNT ];
-    String[] ones = switch ( sex ) {
-        case FEMININE -> ONES_FEMININE;
-        case MASCULINE -> ONES_MASCULINE;
+public class Main {
+    static final int BASE = 1_000;
+    static final String[] RAW_ONES_MASCULINE = {
+            "ноль", "один", "два", "три", "четыре", "пять", "шесть",
+            "семь", "восемь", "девять"
     };
-    for ( int tensDigit = 0; tensDigit < DIGIT_COUNT; tensDigit++ ) {
-        for ( int onesDigit = 0; onesDigit < DIGIT_COUNT; onesDigit++ ){
-            tensOnes[ tensDigit ][ onesDigit ] = switch ( tensDigit ) {
-                case 0 -> ones[ onesDigit ];
-                case 1 -> TEENS[ onesDigit ];
-                default -> TENS[ tensDigit ] + " " + ones[ onesDigit ];
-            };
+    static final String[] RAW_ONES_FEMININE = {
+            "ноль", "одна", "две", "три", "четыре", "пять", "шесть",
+            "семь", "восемь", "девять"
+    };
+    static final String[] RAW_TEENS = {
+            "десять", "одиннадцать", "двенадцать", "тринадцать", "четырнадцать",
+            "пятнадцать", "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать"
+    };
+    static final String[] RAW_TENS = {
+            "", "", "двадцать", "тридцать", "сорок", "пятьдесят",
+            "шестьдесят", "семьдесят", "восемьдесят", "девяносто"
+    };
+    static final String[] RAW_HUNDREDS = {
+            "", "сто", "двести", "триста", "четыреста", "пятьсот",
+            "шестьсот", "семьсот", "восемьсот", "девятьсот"
+    };
+    static final String[][] RAW_PERIODS = {
+            { "", "", "" },
+            { "тысяча", "тысячи", "тысяч" },
+            { "миллион", "миллиона", "миллионов" },
+            { "миллиард", "миллиарда", "миллиардов" }
+    };
+    static final String[] ROUBLE_FORMS = { "рубль.", "рубля.", "рублей." };
+
+    enum Gender {
+        MASCULINE,
+        FEMININE
+    }
+    static final Gender[] CLASS_GENDERS = { Gender.MASCULINE, Gender.FEMININE, Gender.MASCULINE, Gender.MASCULINE };
+
+    static final String[] CARDINALS_MASCULINE = { RAW_ONES_MASCULINE[ 0 ], RAW_ONES_MASCULINE[ 1 ], RAW_ONES_MASCULINE[ 2 ], RAW_ONES_MASCULINE[ 3 ], RAW_ONES_MASCULINE[ 4 ], RAW_ONES_MASCULINE[ 5 ], RAW_ONES_MASCULINE[ 6 ], RAW_ONES_MASCULINE[ 7 ], RAW_ONES_MASCULINE[ 8 ], RAW_ONES_MASCULINE[ 9 ], RAW_TEENS[ 0 ], RAW_TEENS[ 1 ], RAW_TEENS[ 2 ], RAW_TEENS[ 3 ], RAW_TEENS[ 4 ], RAW_TEENS[ 5 ], RAW_TEENS[ 6 ], RAW_TEENS[ 7 ], RAW_TEENS[ 8 ], RAW_TEENS[ 9 ], RAW_TENS[ 2 ] + " " + RAW_ONES_MASCULINE[ 0 ], RAW_TENS[ 2 ] + " " + RAW_ONES_MASCULINE[ 1 ], RAW_TENS[ 2 ] + " " + RAW_ONES_MASCULINE[ 2 ], RAW_TENS[ 2 ] + " " + RAW_ONES_MASCULINE[ 3 ], RAW_TENS[ 2 ] + " " + RAW_ONES_MASCULINE[ 4 ], RAW_TENS[ 2 ] + " " + RAW_ONES_MASCULINE[ 5 ], RAW_TENS[ 2 ] + " " + RAW_ONES_MASCULINE[ 6 ], RAW_TENS[ 2 ] + " " + RAW_ONES_MASCULINE[ 7 ], RAW_TENS[ 2 ] + " " + RAW_ONES_MASCULINE[ 8 ], RAW_TENS[ 2 ] + " " + RAW_ONES_MASCULINE[ 9 ], RAW_TENS[ 3 ] + " " + RAW_ONES_MASCULINE[ 0 ], RAW_TENS[ 3 ] + " " + RAW_ONES_MASCULINE[ 1 ], RAW_TENS[ 3 ] + " " + RAW_ONES_MASCULINE[ 2 ], RAW_TENS[ 3 ] + " " + RAW_ONES_MASCULINE[ 3 ], RAW_TENS[ 3 ] + " " + RAW_ONES_MASCULINE[ 4 ], RAW_TENS[ 3 ] + " " + RAW_ONES_MASCULINE[ 5 ], RAW_TENS[ 3 ] + " " + RAW_ONES_MASCULINE[ 6 ], RAW_TENS[ 3 ] + " " + RAW_ONES_MASCULINE[ 7 ], RAW_TENS[ 3 ] + " " + RAW_ONES_MASCULINE[ 8 ], RAW_TENS[ 3 ] + " " + RAW_ONES_MASCULINE[ 9 ], RAW_TENS[ 4 ] + " " + RAW_ONES_MASCULINE[ 0 ], RAW_TENS[ 4 ] + " " + RAW_ONES_MASCULINE[ 1 ], RAW_TENS[ 4 ] + " " + RAW_ONES_MASCULINE[ 2 ], RAW_TENS[ 4 ] + " " + RAW_ONES_MASCULINE[ 3 ], RAW_TENS[ 4 ] + " " + RAW_ONES_MASCULINE[ 4 ], RAW_TENS[ 4 ] + " " + RAW_ONES_MASCULINE[ 5 ], RAW_TENS[ 4 ] + " " + RAW_ONES_MASCULINE[ 6 ], RAW_TENS[ 4 ] + " " + RAW_ONES_MASCULINE[ 7 ], RAW_TENS[ 4 ] + " " + RAW_ONES_MASCULINE[ 8 ], RAW_TENS[ 4 ] + " " + RAW_ONES_MASCULINE[ 9 ], RAW_TENS[ 5 ] + " " + RAW_ONES_MASCULINE[ 0 ], RAW_TENS[ 5 ] + " " + RAW_ONES_MASCULINE[ 1 ], RAW_TENS[ 5 ] + " " + RAW_ONES_MASCULINE[ 2 ], RAW_TENS[ 5 ] + " " + RAW_ONES_MASCULINE[ 3 ], RAW_TENS[ 5 ] + " " + RAW_ONES_MASCULINE[ 4 ], RAW_TENS[ 5 ] + " " + RAW_ONES_MASCULINE[ 5 ], RAW_TENS[ 5 ] + " " + RAW_ONES_MASCULINE[ 6 ], RAW_TENS[ 5 ] + " " + RAW_ONES_MASCULINE[ 7 ], RAW_TENS[ 5 ] + " " + RAW_ONES_MASCULINE[ 8 ], RAW_TENS[ 5 ] + " " + RAW_ONES_MASCULINE[ 9 ], RAW_TENS[ 6 ] + " " + RAW_ONES_MASCULINE[ 0 ], RAW_TENS[ 6 ] + " " + RAW_ONES_MASCULINE[ 1 ], RAW_TENS[ 6 ] + " " + RAW_ONES_MASCULINE[ 2 ], RAW_TENS[ 6 ] + " " + RAW_ONES_MASCULINE[ 3 ], RAW_TENS[ 6 ] + " " + RAW_ONES_MASCULINE[ 4 ], RAW_TENS[ 6 ] + " " + RAW_ONES_MASCULINE[ 5 ], RAW_TENS[ 6 ] + " " + RAW_ONES_MASCULINE[ 6 ], RAW_TENS[ 6 ] + " " + RAW_ONES_MASCULINE[ 7 ], RAW_TENS[ 6 ] + " " + RAW_ONES_MASCULINE[ 8 ], RAW_TENS[ 6 ] + " " + RAW_ONES_MASCULINE[ 9 ], RAW_TENS[ 7 ] + " " + RAW_ONES_MASCULINE[ 0 ], RAW_TENS[ 7 ] + " " + RAW_ONES_MASCULINE[ 1 ], RAW_TENS[ 7 ] + " " + RAW_ONES_MASCULINE[ 2 ], RAW_TENS[ 7 ] + " " + RAW_ONES_MASCULINE[ 3 ], RAW_TENS[ 7 ] + " " + RAW_ONES_MASCULINE[ 4 ], RAW_TENS[ 7 ] + " " + RAW_ONES_MASCULINE[ 5 ], RAW_TENS[ 7 ] + " " + RAW_ONES_MASCULINE[ 6 ], RAW_TENS[ 7 ] + " " + RAW_ONES_MASCULINE[ 7 ], RAW_TENS[ 7 ] + " " + RAW_ONES_MASCULINE[ 8 ], RAW_TENS[ 7 ] + " " + RAW_ONES_MASCULINE[ 9 ], RAW_TENS[ 8 ] + " " + RAW_ONES_MASCULINE[ 0 ], RAW_TENS[ 8 ] + " " + RAW_ONES_MASCULINE[ 1 ], RAW_TENS[ 8 ] + " " + RAW_ONES_MASCULINE[ 2 ], RAW_TENS[ 8 ] + " " + RAW_ONES_MASCULINE[ 3 ], RAW_TENS[ 8 ] + " " + RAW_ONES_MASCULINE[ 4 ], RAW_TENS[ 8 ] + " " + RAW_ONES_MASCULINE[ 5 ], RAW_TENS[ 8 ] + " " + RAW_ONES_MASCULINE[ 6 ], RAW_TENS[ 8 ] + " " + RAW_ONES_MASCULINE[ 7 ], RAW_TENS[ 8 ] + " " + RAW_ONES_MASCULINE[ 8 ], RAW_TENS[ 8 ] + " " + RAW_ONES_MASCULINE[ 9 ], RAW_TENS[ 9 ] + " " + RAW_ONES_MASCULINE[ 0 ], RAW_TENS[ 9 ] + " " + RAW_ONES_MASCULINE[ 1 ], RAW_TENS[ 9 ] + " " + RAW_ONES_MASCULINE[ 2 ], RAW_TENS[ 9 ] + " " + RAW_ONES_MASCULINE[ 3 ], RAW_TENS[ 9 ] + " " + RAW_ONES_MASCULINE[ 4 ], RAW_TENS[ 9 ] + " " + RAW_ONES_MASCULINE[ 5 ], RAW_TENS[ 9 ] + " " + RAW_ONES_MASCULINE[ 6 ], RAW_TENS[ 9 ] + " " + RAW_ONES_MASCULINE[ 7 ], RAW_TENS[ 9 ] + " " + RAW_ONES_MASCULINE[ 8 ], RAW_TENS[ 9 ] + " " + RAW_ONES_MASCULINE[ 9 ] };
+    static final String[] CARDINALS_FEMININE = { RAW_ONES_FEMININE[ 0 ], RAW_ONES_FEMININE[ 1 ], RAW_ONES_FEMININE[ 2 ], RAW_ONES_FEMININE[ 3 ], RAW_ONES_FEMININE[ 4 ], RAW_ONES_FEMININE[ 5 ], RAW_ONES_FEMININE[ 6 ], RAW_ONES_FEMININE[ 7 ], RAW_ONES_FEMININE[ 8 ], RAW_ONES_FEMININE[ 9 ], RAW_TEENS[ 0 ], RAW_TEENS[ 1 ], RAW_TEENS[ 2 ], RAW_TEENS[ 3 ], RAW_TEENS[ 4 ], RAW_TEENS[ 5 ], RAW_TEENS[ 6 ], RAW_TEENS[ 7 ], RAW_TEENS[ 8 ], RAW_TEENS[ 9 ], RAW_TENS[ 2 ] + " " + RAW_ONES_FEMININE[ 0 ], RAW_TENS[ 2 ] + " " + RAW_ONES_FEMININE[ 1 ], RAW_TENS[ 2 ] + " " + RAW_ONES_FEMININE[ 2 ], RAW_TENS[ 2 ] + " " + RAW_ONES_FEMININE[ 3 ], RAW_TENS[ 2 ] + " " + RAW_ONES_FEMININE[ 4 ], RAW_TENS[ 2 ] + " " + RAW_ONES_FEMININE[ 5 ], RAW_TENS[ 2 ] + " " + RAW_ONES_FEMININE[ 6 ], RAW_TENS[ 2 ] + " " + RAW_ONES_FEMININE[ 7 ], RAW_TENS[ 2 ] + " " + RAW_ONES_FEMININE[ 8 ], RAW_TENS[ 2 ] + " " + RAW_ONES_FEMININE[ 9 ], RAW_TENS[ 3 ] + " " + RAW_ONES_FEMININE[ 0 ], RAW_TENS[ 3 ] + " " + RAW_ONES_FEMININE[ 1 ], RAW_TENS[ 3 ] + " " + RAW_ONES_FEMININE[ 2 ], RAW_TENS[ 3 ] + " " + RAW_ONES_FEMININE[ 3 ], RAW_TENS[ 3 ] + " " + RAW_ONES_FEMININE[ 4 ], RAW_TENS[ 3 ] + " " + RAW_ONES_FEMININE[ 5 ], RAW_TENS[ 3 ] + " " + RAW_ONES_FEMININE[ 6 ], RAW_TENS[ 3 ] + " " + RAW_ONES_FEMININE[ 7 ], RAW_TENS[ 3 ] + " " + RAW_ONES_FEMININE[ 8 ], RAW_TENS[ 3 ] + " " + RAW_ONES_FEMININE[ 9 ], RAW_TENS[ 4 ] + " " + RAW_ONES_FEMININE[ 0 ], RAW_TENS[ 4 ] + " " + RAW_ONES_FEMININE[ 1 ], RAW_TENS[ 4 ] + " " + RAW_ONES_FEMININE[ 2 ], RAW_TENS[ 4 ] + " " + RAW_ONES_FEMININE[ 3 ], RAW_TENS[ 4 ] + " " + RAW_ONES_FEMININE[ 4 ], RAW_TENS[ 4 ] + " " + RAW_ONES_FEMININE[ 5 ], RAW_TENS[ 4 ] + " " + RAW_ONES_FEMININE[ 6 ], RAW_TENS[ 4 ] + " " + RAW_ONES_FEMININE[ 7 ], RAW_TENS[ 4 ] + " " + RAW_ONES_FEMININE[ 8 ], RAW_TENS[ 4 ] + " " + RAW_ONES_FEMININE[ 9 ], RAW_TENS[ 5 ] + " " + RAW_ONES_FEMININE[ 0 ], RAW_TENS[ 5 ] + " " + RAW_ONES_FEMININE[ 1 ], RAW_TENS[ 5 ] + " " + RAW_ONES_FEMININE[ 2 ], RAW_TENS[ 5 ] + " " + RAW_ONES_FEMININE[ 3 ], RAW_TENS[ 5 ] + " " + RAW_ONES_FEMININE[ 4 ], RAW_TENS[ 5 ] + " " + RAW_ONES_FEMININE[ 5 ], RAW_TENS[ 5 ] + " " + RAW_ONES_FEMININE[ 6 ], RAW_TENS[ 5 ] + " " + RAW_ONES_FEMININE[ 7 ], RAW_TENS[ 5 ] + " " + RAW_ONES_FEMININE[ 8 ], RAW_TENS[ 5 ] + " " + RAW_ONES_FEMININE[ 9 ], RAW_TENS[ 6 ] + " " + RAW_ONES_FEMININE[ 0 ], RAW_TENS[ 6 ] + " " + RAW_ONES_FEMININE[ 1 ], RAW_TENS[ 6 ] + " " + RAW_ONES_FEMININE[ 2 ], RAW_TENS[ 6 ] + " " + RAW_ONES_FEMININE[ 3 ], RAW_TENS[ 6 ] + " " + RAW_ONES_FEMININE[ 4 ], RAW_TENS[ 6 ] + " " + RAW_ONES_FEMININE[ 5 ], RAW_TENS[ 6 ] + " " + RAW_ONES_FEMININE[ 6 ], RAW_TENS[ 6 ] + " " + RAW_ONES_FEMININE[ 7 ], RAW_TENS[ 6 ] + " " + RAW_ONES_FEMININE[ 8 ], RAW_TENS[ 6 ] + " " + RAW_ONES_FEMININE[ 9 ], RAW_TENS[ 7 ] + " " + RAW_ONES_FEMININE[ 0 ], RAW_TENS[ 7 ] + " " + RAW_ONES_FEMININE[ 1 ], RAW_TENS[ 7 ] + " " + RAW_ONES_FEMININE[ 2 ], RAW_TENS[ 7 ] + " " + RAW_ONES_FEMININE[ 3 ], RAW_TENS[ 7 ] + " " + RAW_ONES_FEMININE[ 4 ], RAW_TENS[ 7 ] + " " + RAW_ONES_FEMININE[ 5 ], RAW_TENS[ 7 ] + " " + RAW_ONES_FEMININE[ 6 ], RAW_TENS[ 7 ] + " " + RAW_ONES_FEMININE[ 7 ], RAW_TENS[ 7 ] + " " + RAW_ONES_FEMININE[ 8 ], RAW_TENS[ 7 ] + " " + RAW_ONES_FEMININE[ 9 ], RAW_TENS[ 8 ] + " " + RAW_ONES_FEMININE[ 0 ], RAW_TENS[ 8 ] + " " + RAW_ONES_FEMININE[ 1 ], RAW_TENS[ 8 ] + " " + RAW_ONES_FEMININE[ 2 ], RAW_TENS[ 8 ] + " " + RAW_ONES_FEMININE[ 3 ], RAW_TENS[ 8 ] + " " + RAW_ONES_FEMININE[ 4 ], RAW_TENS[ 8 ] + " " + RAW_ONES_FEMININE[ 5 ], RAW_TENS[ 8 ] + " " + RAW_ONES_FEMININE[ 6 ], RAW_TENS[ 8 ] + " " + RAW_ONES_FEMININE[ 7 ], RAW_TENS[ 8 ] + " " + RAW_ONES_FEMININE[ 8 ], RAW_TENS[ 8 ] + " " + RAW_ONES_FEMININE[ 9 ], RAW_TENS[ 9 ] + " " + RAW_ONES_FEMININE[ 0 ], RAW_TENS[ 9 ] + " " + RAW_ONES_FEMININE[ 1 ], RAW_TENS[ 9 ] + " " + RAW_ONES_FEMININE[ 2 ], RAW_TENS[ 9 ] + " " + RAW_ONES_FEMININE[ 3 ], RAW_TENS[ 9 ] + " " + RAW_ONES_FEMININE[ 4 ], RAW_TENS[ 9 ] + " " + RAW_ONES_FEMININE[ 5 ], RAW_TENS[ 9 ] + " " + RAW_ONES_FEMININE[ 6 ], RAW_TENS[ 9 ] + " " + RAW_ONES_FEMININE[ 7 ], RAW_TENS[ 9 ] + " " + RAW_ONES_FEMININE[ 8 ], RAW_TENS[ 9 ] + " " + RAW_ONES_FEMININE[ 9 ] };
+    static final String[][] CARDINALS_BY_GENDER = {
+            CARDINALS_MASCULINE,
+            CARDINALS_FEMININE
+    };
+
+    static final int[] PLURAL_FORMS = { 2, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 1, 1, 1, 2, 2, 2, 2, 2 };
+
+    static void main() {
+        Scanner sc = new Scanner( System.in );
+        while ( true ) {
+            String inputString = sc.nextLine();
+            if ( inputString.equals( "exit" ) ) break;
+            try {
+                int inputValue = Integer.parseInt( inputString );
+                boolean isNegative = inputValue < 0;
+                spell( inputValue, isNegative );
+            } catch ( NumberFormatException ignore ) {
+                System.out.println( "Введите корректное целое число" );
+            }
         }
     }
-    return tensOnes;
-}
 
-void initTens() {
-    tensOnesMasculine = initTensArr( Sex.MASCULINE );
-    tensOnesFeminine = initTensArr( Sex.FEMININE );
-}
-void initTables() {
-    initPeriods();
-    initTens();
-    initTriplets();
-}
-
-void main() {
-    initTables();
-    Scanner sc = new Scanner( System.in );
-    while ( true ) {
-        String inputString = sc.nextLine();
-        if ( inputString.equals( "exit" ) ) break;
-        try {
-            int inputValue = Integer.parseInt( inputString );
-            boolean isNegative = inputValue < 0;
-            System.out.println( spell ( dissect( Math.abs( inputValue ) ), isNegative ) );
-        } catch ( NumberFormatException ignore ) {
-            System.out.println( "Введите корректное целое число" );
+    static void spell( int inputValue, boolean isNegative ) {
+        StringBuilder output = new StringBuilder();
+        int[] triplets = new int[ 4 ];
+        int count = dissect( inputValue, triplets );
+        if ( isNegative ) output.append( "минус " );
+        for ( int i = count - 1; i >= 0; i-- ) {
+            int triplet = triplets[ i ];
+            if ( triplet == 0 ) continue;
+            int lastTwo = triplet % 100;
+            Gender gender = CLASS_GENDERS[ i ];
+            String part = RAW_HUNDREDS[ triplet / 100 ] + " " +
+                    CARDINALS_BY_GENDER[ gender.ordinal() ][ lastTwo ] + " " +
+                    RAW_PERIODS[ i ][ PLURAL_FORMS[ lastTwo ] ];
+            output.append( part.trim() ).append( " " );
         }
+        output.append( output.isEmpty() ? "ноль " : "" );
+        int lastTwo = triplets[ 0 ] % 100;
+        output.append( ROUBLE_FORMS[ PLURAL_FORMS[ lastTwo ] ] );
+        System.out.println( capitalize( output.toString().trim() ) );
     }
-}
 
-List<Integer> dissect( int inputValue ) {
-    List<Integer> triplets = new ArrayList<>();
-    do {
-        int triplet = inputValue % BASE;
-        triplets.add( triplet );
-        inputValue /= BASE;
-    } while ( inputValue > 0 );
-    return triplets;
-}
+    static int dissect( int inputValue, int[] output ) {
+        int count = 0;
+        int temp = Math.abs( inputValue );
 
-String spell( final List<Integer> triplets, final boolean isNegative ) {
-    StringBuilder sb = new StringBuilder();
-    if ( isNegative ) sb.append( "минус " );
-    for ( int i = triplets.size() - 1; i >= 0; i-- ) {
-        if ( triplets.get( i ) == 0 && !PERIOD_CAN_BE_ZERO[ i ] ) continue;
-        int value = triplets.get( i );
-        Sex sex = PERIOD_IS_FEMALE[ i ] ? Sex.FEMININE : Sex.MASCULINE;
-        String part = String.join( " ",
-                TRIPLETS[ sex.ordinal() ][ value ],
-                PERIODS[ i ][ value % 100 ]
-        );
-        sb.append( part.trim() ).append( " " );
+        while ( temp > 0 ) {
+            output[ count ] = temp % BASE;
+            temp /= BASE;
+            count++;
+        }
+
+        return count;
     }
-    sb.append( sb.isEmpty() ? "ноль " : "" );
-    return capitalize( sb.toString().trim() );
-}
 
-String capitalize( String str ) {
-    if ( str.isEmpty() ) return str;
-    return Character.toUpperCase( str.charAt( 0 ) ) + str.substring( 1 );
+    static String capitalize( String str ) {
+        if ( str.isEmpty() ) return str;
+        return Character.toUpperCase( str.charAt( 0 ) ) + str.substring( 1 );
+    }
 }
