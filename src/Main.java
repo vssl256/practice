@@ -18,11 +18,11 @@ public class Main {
             "", "", "двадцать", "тридцать", "сорок", "пятьдесят",
             "шестьдесят", "семьдесят", "восемьдесят", "девяносто"
     };
-    static final String[] RAW_HUNDREDS = {
+    static final String[] HUNDREDS = {
             "", "сто", "двести", "триста", "четыреста", "пятьсот",
             "шестьсот", "семьсот", "восемьсот", "девятьсот"
     };
-    static final String[][] RAW_PERIODS = {
+    static final String[][] PERIODS = {
             { "", "", "" },
             { "тысяча", "тысячи", "тысяч" },
             { "миллион", "миллиона", "миллионов" },
@@ -70,9 +70,9 @@ public class Main {
             if ( triplet == 0 ) continue;
             int lastTwo = triplet % 100;
             Gender gender = CLASS_GENDERS[ i ];
-            String part = RAW_HUNDREDS[ triplet / 100 ] + " " +
+            String part = HUNDREDS[ triplet / 100 ] + " " +
                     CARDINALS_BY_GENDER[ gender.ordinal() ][ lastTwo ] + " " +
-                    RAW_PERIODS[ i ][ PLURAL_FORMS[ lastTwo ] ];
+                    PERIODS[ i ][ PLURAL_FORMS[ lastTwo ] ];
             output.append( part.trim() ).append( " " );
         }
         output.append( output.isEmpty() ? "ноль " : "" );
